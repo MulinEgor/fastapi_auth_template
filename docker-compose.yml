@@ -1,0 +1,105 @@
+# MARK: Base
+x-postgres-base: &postgres-base
+  image: postgres:16
+  restart: always
+  healthcheck:
+    test:
+      - CMD-SHELL
+      - pg_isready -U postgres
+    interval: 10s
+    timeout: 5s
+    retries: 5
+
+x-app-base: &app-base
+  build:
+    context: ./
+  restart: always
+
+# MARK: Dev
+services:
+  postgres-dev:
+    profiles: [ "dev" ]
+    <<: *postgres-base
+    env_file: "./src/.env"
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
+    volumes:
+      - ./docker/postgres/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
+      - pgdata-dev:/var/lib/postgresql/data
+    networks:
+      - dev
+
+  app-dev:
+    profiles: [ "dev" ]
+    <<: *app-base
+    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+    env_file: "./src/.env"
+    volumes:
+      - ./:/app
+      - /app/.venv
+    ports:
+      - 8000:8000
+    expose:
+      - 8000
+    depends_on:
+      postgres-dev:
+        condition: service_healthy
+    networks:
+      - dev
+
+  # MARK: Test
+  postgres-worker-gw0:
+    profiles: [ "test" ]
+    <<: *postgres-base
+    env_file: "./src/.env.test"
+    environment:
+      - POSTGRES_DB=gw0
+    networks:
+      - test
+
+  postgres-worker-gw1:
+    profiles: [ "test" ]
+    <<: *postgres-base
+    env_file: "./src/.env.test"
+    environment:
+      - POSTGRES_DB=gw1
+    networks:
+      - test
+
+  app-test:
+    profiles: [ "test" ]
+    build:
+      context: ./
+      args:
+        ENV: test
+    command: sh -c "
+      alembic -x worker_id=gw0 upgrade heads &&
+      alembic -x worker_id=gw1 upgrade heads &&
+      coverage run --source='.' \
+      -m pytest \
+      -n 2 \
+      --dist loadscope \
+      -s -r A \
+      --rootdir=/app/ \
+      --disable-pytest-warnings && \
+      coverage html"
+    env_file: "./src/.env.test"
+    volumes:
+      - ./:/app
+      - /app/.venv
+    depends_on:
+      postgres-worker-gw0:
+        condition: service_healthy
+      postgres-worker-gw1:
+        condition: service_healthy
+    networks:
+      - test
+
+volumes:
+  pgdata-dev:
+
+networks:
+  dev:
+  test:
