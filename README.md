@@ -8,56 +8,47 @@
 [![Static Badge](https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
 
-## Установка и запуск проекта
+## Project Setup and Launch
 
-1. Установить [uv](https://docs.astral.sh/uv/getting-started/installation/).
+1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
-2. Клонировать проект:
-```bash
-git clone git@github.com:MulinEgor/fastapi_auth_template.git
-```
-
-3. Перейти в корневую директорию проекта.
-
-4. Установить зависимости, включая зависимости для разработки:
+2. Install dependencies, including dev ones:
 
 ```bash
 uv sync --extra dev
 ```
 
-5. Создать `.env` на основании `.env.example`:
+3. Create `.env` based on `.env.example`:
 
 ```bash
 cp -r src/.env.example src/.env`
 ```
 
-6. Запустить API и PostgreSQL в Docker контейнерах:
+6. Start API and PostgreSQL in Docker containers:
 ```bash
 make start_dev
 ```
 
-7. Применить миграции:
+7. Apply migrations:
 ```bash
 make migrate
 ```
 
-8. Документация API и доступные эндпоинт:
+8. Docs:
 * Swagger UI: http://127.0.0.1:8000/docs
 * ReDoc: http://127.0.0.1:8000/redoc
 
-9. Для остановки контейнеров выполнить
+9. Stoppage
 ```bash
 make stop_dev
 ```
 
-## Тесты
-1. Перед запуском тестов необходимо создать `.env.test` на основе`.env.test.example`:
+## Tests
+1. Before starting tests, you need to create `.env.test` based on`.env.test.example`:
 ```bash
 cp -r src/.env.test.example src/.env.test
 ```
 
-2. Тесты запускаются из независимой базы данных Postgres с помощью команды `make test`.
+2. By default, tests run on 2 PostgreSQL containers.
 
-    По умолчанию тесты запускаются в двух процессах `pytest` с двумя контейнерами PostgreSQL.
-
-3. После выполнения тестов в файле `htmlcov/index.html` можно увидеть отчет о покрытии кода тестами.
+3. After running tests, in `htmlcov/index.html` you can see test coverage.
