@@ -6,7 +6,7 @@ from typing import Literal
 import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.auth.schemas as jwt_schemas
+import src.auth.schemas as schemas
 from src import constants, exceptions
 from src.settings import settings
 from src.users.repositories import UserRepository
@@ -91,7 +91,7 @@ class JWTService:
         return f"Bearer {encoded_jwt}", expires_at
 
     @classmethod
-    async def create_tokens(cls, user_id: str) -> jwt_schemas.JWTGetSchema:
+    async def create_tokens(cls, user_id: str) -> schemas.JWTGetSchema:
         """
         Метод для создания access и refresh токенов.
 
@@ -111,7 +111,7 @@ class JWTService:
             token_type="refresh_token",
         )
 
-        return jwt_schemas.JWTGetSchema(
+        return schemas.JWTGetSchema(
             access_token=access_token,
             refresh_token=refresh_token,
             expires_at=expires_at,
@@ -122,8 +122,8 @@ class JWTService:
     async def refresh_tokens(
         cls,
         session: AsyncSession,
-        tokens_data: jwt_schemas.JWTRefreshSchema,
-    ) -> jwt_schemas.JWTGetSchema:
+        tokens_data: schemas.JWTRefreshSchema,
+    ) -> schemas.JWTGetSchema:
         """
         Метод для обновления access и refresh токенов.
 

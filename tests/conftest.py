@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 import src.auth.schemas as auth_schemas
-import src.users.schemas as schemas
+import src.users.schemas as user_schemas
 from src import utils
 from src.auth.services import JWTService
 from src.settings import settings
@@ -157,13 +157,13 @@ async def user_admin_db(session: AsyncSession) -> UserModel:
 
 
 @pytest_asyncio.fixture
-async def user_create_data() -> schemas.UserReadAdminSchema:
+async def user_create_data() -> user_schemas.UserReadAdminSchema:
     """
     Подготовленные данные для создания
     пользователя в БД администратором.
     """
 
-    return schemas.UserCreateAdminSchema(
+    return user_schemas.UserCreateAdminSchema(
         email=faker.email(),
         password=faker.password(),
         is_admin=False,
@@ -171,13 +171,13 @@ async def user_create_data() -> schemas.UserReadAdminSchema:
 
 
 @pytest_asyncio.fixture
-async def user_update_data() -> schemas.UserUpdateAdminSchema:
+async def user_update_data() -> user_schemas.UserUpdateAdminSchema:
     """
     Подготовленные данные для обновления
     пользователя в БД администратором.
     """
 
-    return schemas.UserUpdateAdminSchema(
+    return user_schemas.UserUpdateAdminSchema(
         email=faker.email(),
         password=faker.password(),
         is_admin=True,

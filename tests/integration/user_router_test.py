@@ -5,7 +5,7 @@ from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import src.auth.schemas as auth_schemas
-import src.users.schemas as schemas
+import src.users.schemas as user_schemas
 from src import constants
 from src.users.models import UserModel
 from src.users.repositories import UserRepository
@@ -34,7 +34,7 @@ class TestUserRouter(BaseTestRouter):
 
         assert response.status_code == status.HTTP_200_OK
 
-        data = schemas.UserReadSchema(**response.json())
+        data = user_schemas.UserReadSchema(**response.json())
 
         assert str(data.id) == user_db.id
         assert data.email == user_db.email
@@ -57,7 +57,7 @@ class TestUserRouter(BaseTestRouter):
 
         assert response.status_code == status.HTTP_200_OK
 
-        data = schemas.UserReadSchema(**response.json())
+        data = user_schemas.UserReadSchema(**response.json())
 
         assert str(data.id) == user_admin_db.id
         assert data.email == user_admin_db.email
@@ -82,7 +82,7 @@ class TestUserRouter(BaseTestRouter):
         )
         assert response.status_code == status.HTTP_200_OK
 
-        users_data = schemas.UserListReadSchema(**response.json())
+        users_data = user_schemas.UserListReadSchema(**response.json())
 
         users_count = await UserRepository.count(session=session)
         assert users_data.count == users_count
@@ -108,7 +108,7 @@ class TestUserRouter(BaseTestRouter):
         пользователей с учетом учета фильтрации.
         """
 
-        params = schemas.UsersQuerySchema(is_admin=False)
+        params = user_schemas.UsersQuerySchema(is_admin=False)
 
         response = await router_client.get(
             url="/users",
@@ -117,7 +117,7 @@ class TestUserRouter(BaseTestRouter):
         )
         assert response.status_code == status.HTTP_200_OK
 
-        users_data = schemas.UserListReadSchema(**response.json())
+        users_data = user_schemas.UserListReadSchema(**response.json())
 
         regular_users = await UserRepository.count(
             session=session,
@@ -133,7 +133,7 @@ class TestUserRouter(BaseTestRouter):
         self,
         session: AsyncSession,
         router_client: httpx.AsyncClient,
-        user_create_data: schemas.UserCreateAdminSchema,
+        user_create_data: user_schemas.UserCreateAdminSchema,
         admin_jwt_tokens: auth_schemas.JWTGetSchema,
     ):
         """Администратор может создать пользователя."""
@@ -145,7 +145,7 @@ class TestUserRouter(BaseTestRouter):
         )
         assert response.status_code == status.HTTP_201_CREATED
 
-        created_user = schemas.UserReadAdminSchema(**response.json())
+        created_user = user_schemas.UserReadAdminSchema(**response.json())
 
         assert created_user.email == user_create_data.email
         assert created_user.is_admin is False
@@ -160,7 +160,7 @@ class TestUserRouter(BaseTestRouter):
         self,
         router_client: httpx.AsyncClient,
         user_db: UserModel,
-        user_update_data: schemas.UserUpdateAdminSchema,
+        user_update_data: user_schemas.UserUpdateAdminSchema,
         user_jwt_tokens: auth_schemas.JWTGetSchema,
     ):
         """
@@ -176,7 +176,7 @@ class TestUserRouter(BaseTestRouter):
         )
         assert response.status_code == status.HTTP_200_OK
 
-        updated_user = schemas.UserReadSchema(**response.json())
+        updated_user = user_schemas.UserReadSchema(**response.json())
 
         assert str(updated_user.id) == user_db.id
         assert updated_user.email == user_update_data.email
@@ -186,7 +186,7 @@ class TestUserRouter(BaseTestRouter):
         self,
         router_client: httpx.AsyncClient,
         user_db: UserModel,
-        user_update_data: schemas.UserUpdateAdminSchema,
+        user_update_data: user_schemas.UserUpdateAdminSchema,
         admin_jwt_tokens: auth_schemas.JWTGetSchema,
     ):
         """
@@ -202,7 +202,7 @@ class TestUserRouter(BaseTestRouter):
         )
         assert response.status_code == status.HTTP_200_OK
 
-        updated_user = schemas.UserReadAdminSchema(**response.json())
+        updated_user = user_schemas.UserReadAdminSchema(**response.json())
 
         assert str(updated_user.id) == user_db.id
         assert updated_user.email == user_update_data.email

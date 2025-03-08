@@ -5,7 +5,7 @@ from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import src.auth.schemas as auth_schemas
-import src.users.schemas as schemas
+import src.users.schemas as user_schemas
 from src import utils
 from src.auth.routers import auth_router
 from src.users.repositories import UserRepository
@@ -26,7 +26,7 @@ class TestAuthRouter(BaseTestRouter):
     ):
         """Проверка регистрации пользователя."""
 
-        schema = schemas.UserCreateSchema(
+        schema = user_schemas.UserCreateSchema(
             email=faker.email(),
             password=faker.password(),
         )
@@ -62,13 +62,13 @@ class TestAuthRouter(BaseTestRouter):
         email, password = faker.email(), faker.password()
         await UserRepository.create(
             session=session,
-            obj_in=schemas.UserCreateRepositorySchema(
+            obj_in=user_schemas.UserCreateRepositorySchema(
                 email=email,
                 hashed_password=utils.get_hash(password),
             ),
         )
 
-        schema = schemas.UserLoginSchema(
+        schema = user_schemas.UserLoginSchema(
             email=email,
             password=password,
         )

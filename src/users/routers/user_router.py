@@ -148,7 +148,7 @@ async def update_user_by_admin_route(
 async def delete_user_by_admin_route(
     id: str,
     session: AsyncSession = Depends(dependencies.get_session),
-) -> None:
+):
     """
     Удалить пользователя.
 
