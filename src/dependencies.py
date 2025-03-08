@@ -71,7 +71,7 @@ async def get_current_user(
         else:
             raise exceptions.InvalidTokenException
 
-    user_db = await UserRepository.find_one_or_none(
+    user_db = await UserRepository.get_one_or_none(
         session=session,
         id=user_id,
     )

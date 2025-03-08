@@ -4,7 +4,7 @@ from typing import Tuple
 
 from sqlalchemy import Select, select
 
-import src.users.schemas as user_schemas
+import src.users.schemas as schemas
 from src.base_repository import BaseRepository
 from src.users.models import UserModel
 
@@ -12,11 +12,9 @@ from src.users.models import UserModel
 class UserRepository(
     BaseRepository[
         UserModel,
-        user_schemas.UserCreateRepositorySchema
-        | user_schemas.UserCreateRepositoryAdminSchema,
-        user_schemas.UserUpdateRepositorySchema
-        | user_schemas.UserUpdateRepositoryAdminSchema,
-    ]
+        schemas.UserCreateSchema,
+        schemas.UserUpdateSchema,
+    ],
 ):
     """
     Основной репозиторий для работы с моделью UserModel.
@@ -26,14 +24,17 @@ class UserRepository(
     model = UserModel
 
     @classmethod
-    async def get_users_stmt_by_query(
+    async def get_stmt_by_query(
         cls,
-        query_params: user_schemas.UsersQuerySchema,
+        query_params: schemas.UsersQuerySchema,
     ) -> Select[Tuple[UserModel]]:
         """
         Создать подготовленное выражение для запроса в БД,
         применив основные query параметры без учета пагинации,
         для получения списка пользователей.
+
+        Args:
+            query_params (UsersQuerySchema): параметры для запроса.
 
         Returns:
             stmt: Подготовленное выражение для запроса в БД.

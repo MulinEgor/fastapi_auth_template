@@ -1,6 +1,6 @@
 """Модуль интерфейсов для CRUD операций с моделям БД."""
 
-from typing import Any, Generic, Tuple, TypeVar, Union
+from typing import Any, Generic, Tuple, TypeVar
 
 from pydantic import BaseModel
 from sqlalchemy import Select, asc, delete, desc, insert, or_, select, update
@@ -15,28 +15,38 @@ CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 
-class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
+class BaseRepository(
+    Generic[
+        ModelType,
+        CreateSchemaType,
+        UpdateSchemaType,
+    ],
+):
     """
     Основной класс интерфейсов для CRUD операций с моделям БД.
 
     Args:
-        model (Type[ModelType]): модель SQLAlchemy.
+        model: модель SQLAlchemy.
     """
 
     model = None
 
     # MARK: Create
     @classmethod
-    async def add(
+    async def create(
         cls,
         session: AsyncSession,
-        obj_in: Union[CreateSchemaType, dict[str, Any]],
+        obj_in: CreateSchemaType | dict[str, Any],
     ) -> ModelType:
         """
         Добавить запись в текущую сессию.
 
         Если `obj_in` является моделью Pydantic,
         из него удаляются не заданные явно поля.
+
+        Args:
+            session (AsyncSession): текущая сессия.
+            obj_in (CreateSchemaType | dict[str, Any]): данные для создания модели.
 
         Returns:
             ModelType: созданный экземпляр модели.
@@ -49,10 +59,11 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
         stmt = insert(cls.model).values(**create_data).returning(cls.model)
         result = await session.execute(stmt)
+
         return result.scalars().one()
 
     @classmethod
-    async def add_bulk(
+    async def create_bulk(
         cls,
         session: AsyncSession,
         data: list[dict[str, Any]],
@@ -60,17 +71,22 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         Добавить несколько записей в текущую сессию.
 
+        Args:
+            session (AsyncSession): текущая сессия.
+            data (list[dict[str, Any]]): список данных для создания моделей.
+
         Returns:
             list[ModelType]: список созданных моделей.
         """
 
         stmt = insert(cls.model).returning(cls.model)
         result = await session.execute(stmt, data)
+
         return result.scalars().all()
 
-    # MARK: Read
+    # MARK: Get
     @classmethod
-    async def find_one_or_none(
+    async def get_one_or_none(
         cls,
         session: AsyncSession,
         *filter,
@@ -79,6 +95,11 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         Возвращает как максимум один объект или выбрасывает исключение.
 
+        Args:
+            session (AsyncSession): текущая сессия.
+            *filter: фильтры для запроса.
+            **filter_by: фильтры для запроса.
+
         Returns:
             ModelType:
                 Найденная модель данных или `None`, если совпадений не было найдено.
@@ -86,10 +107,11 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
         stmt = select(cls.model).filter(*filter).filter_by(**filter_by)
         result = await session.execute(stmt)
+
         return result.scalars().one_or_none()
 
     @classmethod
-    async def find_all(
+    async def get_all(
         cls,
         session: AsyncSession,
         offset: int = constants.DEFAULT_QUERY_OFFSET,
@@ -100,6 +122,13 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         Возвращает все модели, соответствующие параметрам поиска.
         Если совпадений не найдено, возвращает пустой список.
+
+        Args:
+            session (AsyncSession): текущая сессия.
+            offset (int): смещение для пагинации.
+            limit (int): количество записей для пагинации.
+            *filter: фильтры для запроса.
+            **filter_by: фильтры для запроса.
 
         Returns:
             list[ModelType]: модели, соответствующие параметрам поиска.
@@ -113,10 +142,11 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             .limit(limit)
         )
         result = await session.execute(stmt)
+
         return result.scalars().all()
 
     @classmethod
-    async def find_all_ilike(
+    async def get_all_ilike(
         cls,
         session: AsyncSession,
         search_fields: dict[str, Any],
@@ -128,6 +158,13 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         Гибкий поиск всех записей с использованием ilike.
 
+        Args:
+            session (AsyncSession): текущая сессия.
+            search_fields (dict[str, Any]): поля для поиска.
+            offset (int): смещение для пагинации.
+            limit (int): количество записей для пагинации.
+            *filter: фильтры для запроса.
+            **filter_by: фильтры для запроса.
         Returns:
             list[ModelType]: модели, соответствующие параметрам поиска.
         """
@@ -143,10 +180,11 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
         stmt = stmt.offset(offset).limit(limit)
         result = await session.execute(stmt)
+
         return result.scalars().all()
 
     @classmethod
-    async def find_all_sorted(
+    async def get_all_sorted(
         cls,
         session: AsyncSession,
         sort_field,
@@ -159,6 +197,14 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         Поиск всех записей, отсортированных по указанному полю.
 
         По умолчанию сортировка происходит по возрастанию.
+
+        Args:
+            session (AsyncSession): текущая сессия.
+            sort_field: поле для сортировки.
+            ascending (bool): флаг для сортировки по возрастанию.
+            limit (int | None): количество записей для пагинации.
+            *filter: фильтры для запроса.
+            **filter_by: фильтры для запроса.
 
         Returns:
             list[ModelType]: модели, соответствующие параметрам поиска.
@@ -174,6 +220,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             .limit(limit)
         )
         result = await session.execute(stmt)
+
         return result.scalars().all()
 
     @classmethod
@@ -189,6 +236,12 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         для запроса в БД, предварительно составленному с учетом фильтрации,
         и вернуть список сущностей.
 
+        Args:
+            session (AsyncSession): текущая сессия.
+            limit (int | None): количество записей для пагинации.
+            offset (int | None): смещение для пагинации.
+            stmt (Select[Tuple[ModelType]]): финальное выражение для запроса в БД.
+
         Returns:
             list[ModelType]:
                 модели, соответствующие параметрам поиска, с учетом пагинации.
@@ -196,6 +249,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
         stmt = stmt.limit(limit=limit).offset(offset=offset)
         result = await session.execute(stmt)
+
         return result.scalars().all()
 
     @classmethod
@@ -211,6 +265,12 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         для запроса в БД, предварительно составленному с учетом фильтрации,
         и вернуть список сущностей.
 
+        Args:
+            session (AsyncSession): текущая сессия.
+            limit (int | None): количество записей для пагинации.
+            offset (int | None): смещение для пагинации.
+            stmt (Select[Tuple[ModelType]]): финальное выражение для запроса в БД.
+
         Returns:
             list[ModelType]:
                 модели, соответствующие параметрам поиска, с учетом пагинации.
@@ -218,6 +278,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
         stmt = stmt.limit(limit=limit).offset(offset=offset)
         result = await session.execute(stmt)
+
         return result.all()
 
     # MARK: Update
@@ -234,6 +295,10 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         Если `obj_in` является моделью Pydantic,
         из него удаляются не заданные явно поля.
 
+        Args:
+            session (AsyncSession): текущая сессия.
+            obj_in (UpdateSchemaType | dict[str, Any]): данные для обновления модели.
+
         Returns:
             ModelType: обновленный экземпляр модели.
         """
@@ -247,6 +312,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             update(cls.model).where(*where).values(**update_data).returning(cls.model)
         )
         result = await session.execute(stmt)
+
         return result.scalars().one()
 
     @classmethod
@@ -257,6 +323,10 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     ) -> list[ModelType]:
         """
         Обновить несколько записей в текущей сессии.
+
+        Args:
+            session (AsyncSession): текущая сессия.
+            data (list[dict[str, Any]]): список данных для обновления моделей.
 
         Returns:
             list[ModelType](list[Base]): список обновленных  моделей.
@@ -274,8 +344,15 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         *filter,
         session: AsyncSession,
         **filter_by,
-    ) -> None:
-        """Удалить запись, соответствующую критериям."""
+    ):
+        """
+        Удалить запись, соответствующую критериям.
+
+        Args:
+            session (AsyncSession): текущая сессия.
+            *filter: фильтры для запроса.
+            **filter_by: фильтры для запроса.
+        """
 
         stmt = delete(cls.model).filter(*filter).filter_by(**filter_by)
         await session.execute(stmt)
@@ -291,6 +368,11 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         Посчитать строки в БД, соответствующий критериям.
 
+        Args:
+            session (AsyncSession): текущая сессия.
+            *filter: фильтры для запроса.
+            **filter_by: фильтры для запроса.
+
         Returns:
             rows_count: количество найденных строк или 0 если совпадений не найдено.
         """
@@ -305,6 +387,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         rows_count = result.scalar()
         if rows_count is None:
             return 0
+
         return rows_count
 
     @classmethod
@@ -317,6 +400,12 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     ) -> int:
         """
         Посчитать строки в БД, соответствующий критериям. с использованием ilike.
+
+        Args:
+            session (AsyncSession): текущая сессия.
+            search_fields (dict[str, Any]): поля для поиска.
+            *filter: фильтры для запроса.
+            **filter_by: фильтры для запроса.
 
         Returns:
             rows_count: количество найденных строк или 0 если совпадений не найдено.
@@ -332,6 +421,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 stmt = stmt.filter(or_(*search_conditions))
 
         result = await session.execute(stmt)
+
         return len(result.scalars().all())
 
     @classmethod
@@ -343,6 +433,10 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         Получить общее количество сущностей в БД, используя финальное выражение
         для запроса в БД, предварительно составленное с учетом фильтрации.
+
+        Args:
+            session (AsyncSession): текущая сессия.
+            stmt (Select[Tuple[ModelType]]): финальное выражение для запроса в БД.
 
         Returns:
             total_count: общее количество сущностей.

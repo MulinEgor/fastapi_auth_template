@@ -115,9 +115,9 @@ class UserUpdateRepositoryAdminSchema(UserUpdateRepositorySchema):
 
 
 class UserListReadSchema(DataListReadBaseSchema):
-    """Pydantic схема для получения пользователя."""
+    """Pydantic схема для получения списка пользователя."""
 
-    users: list[UserReadAdminSchema] = Field(
+    data: list[UserReadAdminSchema] = Field(
         description="Список пользователей, соответствующих query параметрам.",
     )
 

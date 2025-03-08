@@ -3,7 +3,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import src.auth.schemas as auth_schemas
-import src.users.schemas as user_schemas
+import src.users.schemas as schemas
 from src import exceptions, utils
 from src.auth.services.jwt_service import JWTService
 from src.users.repositories import UserRepository
@@ -18,7 +18,7 @@ class AuthService:
     async def register(
         cls,
         session: AsyncSession,
-        schema: user_schemas.UserCreateSchema,
+        schema: schemas.UserCreateSchema,
     ) -> auth_schemas.JWTGetSchema:
         """
         Зарегистрировать нового пользователя.
@@ -47,7 +47,7 @@ class AuthService:
     async def login(
         cls,
         session: AsyncSession,
-        schema: user_schemas.UserLoginSchema,
+        schema: schemas.UserLoginSchema,
     ) -> auth_schemas.JWTGetSchema:
         """
         Авторизовать пользователя.
@@ -67,7 +67,7 @@ class AuthService:
         hashed_password = utils.get_hash(schema.password)
 
         # Поиск пользователя в БД
-        user = await UserRepository.find_one_or_none(
+        user = await UserRepository.get_one_or_none(
             session=session,
             email=schema.email,
             hashed_password=hashed_password,

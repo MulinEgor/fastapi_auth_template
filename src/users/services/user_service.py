@@ -5,22 +5,36 @@ import uuid
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.users.schemas as user_schemas
+import src.users.schemas as schemas
 from src import exceptions, utils
+from src.base_service import BaseService
 from src.users.models import UserModel
 from src.users.repositories import UserRepository
 
 
-class UserService:
+class UserService(
+    BaseService[
+        UserModel,
+        schemas.UserCreateSchema,
+        schemas.UserReadAdminSchema,
+        schemas.UsersQuerySchema,
+        schemas.UserListReadSchema,
+        schemas.UserUpdateSchema,
+        exceptions.UserAlreadyExistsException,
+        exceptions.UserNotFoundException,
+    ],
+):
     """Сервис для работы с пользователями."""
+
+    repository = UserRepository
 
     # MARK: Create
     @classmethod
     async def create(
         cls,
         session: AsyncSession,
-        data: user_schemas.UserCreateSchema | user_schemas.UserCreateAdminSchema,
-    ) -> user_schemas.UserReadAdminSchema:
+        data: schemas.UserCreateSchema | schemas.UserCreateAdminSchema,
+    ) -> schemas.UserReadAdminSchema:
         """
         Создать пользователя в БД.
 
@@ -39,95 +53,21 @@ class UserService:
         try:
             # Хэширование пароля
             hashed_password = utils.get_hash(data.password)
-            data = user_schemas.UserCreateRepositorySchema(
+            data = schemas.UserCreateRepositorySchema(
                 email=data.email,
                 hashed_password=hashed_password,
             )
 
             # Добавление пользователя в БД
-            user = await UserRepository.add(
+            user = await cls.repository.create(
                 session=session,
                 obj_in=data,
             )
             await session.commit()
-            return user_schemas.UserReadAdminSchema.model_validate(user)
+            return schemas.UserReadAdminSchema.model_validate(user)
 
         except IntegrityError as ex:
-            print(ex)
             raise exceptions.UserAlreadyExistsException(exc=ex)
-
-    # MARK: Get
-    @classmethod
-    async def get_by_id(
-        cls,
-        session: AsyncSession,
-        user_id: uuid.UUID,
-    ) -> user_schemas.UserReadAdminSchema:
-        """
-        Поиск пользователя по ID.
-
-        Args:
-            session (AsyncSession): Сессия для работы с базой данных.
-            user_id (uuid.UUID): ID пользователя.
-
-        Returns:
-            UserReadAdminSchema: Найденный пользователь.
-
-        Raises:
-            UserNotFoundException: Пользователь не найден.
-        """
-
-        # Поиск пользователя в БД
-        user_db = await UserRepository.find_one_or_none(session=session, id=user_id)
-
-        if user_db is None:
-            raise exceptions.UserNotFoundException
-
-        return user_schemas.UserReadSchema.model_validate(user_db)
-
-    @classmethod
-    async def get(
-        cls,
-        session: AsyncSession,
-        query_params: user_schemas.UsersQuerySchema,
-    ) -> user_schemas.UserListReadSchema:
-        """
-        Получить список пользователей и их общее количество
-        с фильтрацией по query параметрам, отличным от None.
-
-        Args:
-            session (AsyncSession): Сессия для работы с базой данных.
-            query_params (UsersQuerySchema): Query параметры для фильтрации.
-
-        Returns:
-            UserListReadSchema: список пользователей и их общее количество.
-
-        Raises:
-            UserNotFoundException: Пользователи не найдены.
-        """
-
-        base_stmt = await UserRepository.get_users_stmt_by_query(
-            query_params=query_params,
-        )
-        users = await UserRepository.get_all_with_pagination_from_stmt(
-            session=session,
-            limit=query_params.limit,
-            offset=query_params.offset,
-            stmt=base_stmt,
-        )
-
-        if not users:
-            raise exceptions.UserNotFoundException
-
-        users_count = await UserRepository.count_subquery(
-            session=session,
-            stmt=base_stmt,
-        )
-
-        return user_schemas.UserListReadSchema(
-            count=users_count,
-            users=users,
-        )
 
     # MARK: Update
     @classmethod
@@ -135,8 +75,8 @@ class UserService:
         cls,
         session: AsyncSession,
         user_id: uuid.UUID,
-        data: user_schemas.UserUpdateSchema | user_schemas.UserUpdateAdminSchema,
-    ) -> user_schemas.UserReadAdminSchema:
+        data: schemas.UserUpdateSchema | schemas.UserUpdateAdminSchema,
+    ) -> schemas.UserReadAdminSchema:
         """
         Обновить данные пользователя.
 
@@ -155,7 +95,7 @@ class UserService:
         """
 
         # Поиск пользователя в БД
-        await cls.get_by_id(session=session, user_id=user_id)
+        await cls.get_by_id(session, user_id)
 
         hashed_password = None
         if data.password:
@@ -166,46 +106,17 @@ class UserService:
             updated_user = await UserRepository.update(
                 UserModel.id == user_id,
                 session=session,
-                obj_in=user_schemas.UserUpdateRepositoryAdminSchema(
+                obj_in=schemas.UserUpdateRepositoryAdminSchema(
                     email=data.email,
                     hashed_password=hashed_password,
                     is_admin=data.is_admin
-                    if isinstance(data, user_schemas.UserUpdateAdminSchema)
+                    if isinstance(data, schemas.UserUpdateAdminSchema)
                     else None,
                 ),
             )
             await session.commit()
 
         except IntegrityError as ex:
-            print(ex)
             raise exceptions.UserAlreadyExistsException(exc=ex)
 
-        return user_schemas.UserReadAdminSchema.model_validate(updated_user)
-
-    # MARK: Delete
-    @classmethod
-    async def delete(
-        cls,
-        session: AsyncSession,
-        user_id: uuid.UUID,
-    ) -> None:
-        """
-        Удалить пользователя.
-
-        Args:
-            session (AsyncSession): Сессия для работы с базой данных.
-            user_id (uuid.UUID): ID пользователя.
-
-        Raises:
-            UserNotFoundException: Пользователь не найден.
-        """
-
-        # Поиск пользователя в БД
-        await cls.get_by_id(session=session, user_id=user_id)
-
-        # Удаление пользователя из БД
-        await UserRepository.delete(
-            id=user_id,
-            session=session,
-        )
-        await session.commit()
+        return schemas.UserReadAdminSchema.model_validate(updated_user)

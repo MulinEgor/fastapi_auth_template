@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import src.auth.schemas as jwt_schemas
-import src.users.schemas as user_schemas
+import src.users.schemas as schemas
 from src import dependencies
 from src.auth.services import AuthService, JWTService
 
@@ -18,7 +18,7 @@ auth_router = APIRouter(prefix="/auth", tags=["Авторизация"])
     status_code=status.HTTP_201_CREATED,
 )
 async def register_route(
-    schema: user_schemas.UserCreateSchema,
+    schema: schemas.UserCreateSchema,
     session: AsyncSession = Depends(dependencies.get_session),
 ) -> jwt_schemas.JWTGetSchema:
     """
@@ -40,7 +40,7 @@ async def register_route(
     status_code=status.HTTP_200_OK,
 )
 async def login_route(
-    schema: user_schemas.UserLoginSchema,
+    schema: schemas.UserLoginSchema,
     session: AsyncSession = Depends(dependencies.get_session),
 ) -> jwt_schemas.JWTGetSchema:
     """
