@@ -24,3 +24,6 @@ class DataListReadBaseSchema(BaseModel):
     count: int = Field(
         description="Общее количество сущностей без учета пагинации.",
     )
+    data: list = Field(
+        description="Список сущностей.",
+    )

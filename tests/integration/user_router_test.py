@@ -7,9 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import src.auth.schemas as auth_schemas
 import src.users.schemas as user_schemas
 from src import constants
+from src.users import user_router
 from src.users.models import UserModel
-from src.users.repositories import UserRepository
-from src.users.routers import user_router
+from src.users.repository import UserRepository
 from tests.integration.conftest import BaseTestRouter
 
 
@@ -88,13 +88,13 @@ class TestUserRouter(BaseTestRouter):
         assert users_data.count == users_count
 
         # Ищем первого пользователя в БД и проверяем его данные.
-        first_user_db = await UserRepository.find_one_or_none(
-            session=session, id=users_data.users[0].id
+        first_user_db = await UserRepository.get_one_or_none(
+            session=session, id=users_data.data[0].id
         )
         assert first_user_db is not None
 
-        assert users_data.users[0].email == first_user_db.email
-        assert users_data.users[0].id == first_user_db.id
+        assert users_data.data[0].email == first_user_db.email
+        assert users_data.data[0].id == first_user_db.id
 
     async def test_get_users_by_admin_query(
         self,
@@ -125,8 +125,8 @@ class TestUserRouter(BaseTestRouter):
         )
         assert users_data.count == regular_users
 
-        assert users_data.users[0].email == user_db.email
-        assert str(users_data.users[0].id) == user_db.id
+        assert users_data.data[0].email == user_db.email
+        assert str(users_data.data[0].id) == user_db.id
 
     # MARK: Post
     async def test_create_user_by_admin_route(
@@ -150,7 +150,7 @@ class TestUserRouter(BaseTestRouter):
         assert created_user.email == user_create_data.email
         assert created_user.is_admin is False
 
-        created_user_db = await UserRepository.find_one_or_none(
+        created_user_db = await UserRepository.get_one_or_none(
             session=session, id=created_user.id
         )
         assert created_user_db is not None
@@ -225,7 +225,7 @@ class TestUserRouter(BaseTestRouter):
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
-        deleted_user = await UserRepository.find_one_or_none(
+        deleted_user = await UserRepository.get_one_or_none(
             session=session,
             id=user_db.id,
         )

@@ -3,10 +3,10 @@
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.users.schemas as user_schemas
+import src.users.schemas as schemas
 from src import dependencies
 from src.users.models import UserModel
-from src.users.services import UserService
+from src.users.service import UserService
 
 user_router = APIRouter(
     prefix="/users",
@@ -20,18 +20,18 @@ user_router = APIRouter(
     summary="Получить данные текущего пользователя.",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(dependencies.get_current_user)],
-    response_model=user_schemas.UserReadSchema,
+    response_model=schemas.UserReadSchema,
 )
 async def get_current_user_route(
     user: UserModel = Depends(dependencies.get_current_user),
-) -> user_schemas.UserReadSchema:
+) -> schemas.UserReadSchema:
     """
     Получить данные текущего пользователя.
 
     Доступно авторизованному пользователю.
     """
 
-    return user_schemas.UserReadSchema.model_validate(user)
+    return schemas.UserReadSchema.model_validate(user)
 
 
 @user_router.get(
@@ -39,12 +39,12 @@ async def get_current_user_route(
     summary="Получить данные пользователя по ID.",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(dependencies.get_current_user)],
-    response_model=user_schemas.UserReadSchema,
+    response_model=schemas.UserReadSchema,
 )
 async def get_user_by_id_route(
     id: str,
     session: AsyncSession = Depends(dependencies.get_session),
-) -> user_schemas.UserReadSchema:
+) -> schemas.UserReadSchema:
     """
     Получить данные пользователя по id.
 
@@ -59,12 +59,12 @@ async def get_user_by_id_route(
     summary="Администратор. Получить список пользователей.",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(dependencies.get_current_admin)],
-    response_model=user_schemas.UserListReadSchema,
+    response_model=schemas.UserListReadSchema,
 )
 async def get_users_by_admin_route(
-    query_params: user_schemas.UsersQuerySchema = Query(),
+    query_params: schemas.UsersQuerySchema = Query(),
     session: AsyncSession = Depends(dependencies.get_session),
-) -> user_schemas.UserListReadSchema:
+) -> schemas.UserListReadSchema:
     """
     Получить список пользователей и их общее количество
     с фильтрацией по query параметрам, отличным от None.
@@ -72,7 +72,7 @@ async def get_users_by_admin_route(
     Доступно только администратору.
     """
 
-    return await UserService.get(session, query_params)
+    return await UserService.get_all(session, query_params)
 
 
 # MARK: Post
@@ -83,9 +83,9 @@ async def get_users_by_admin_route(
     dependencies=[Depends(dependencies.get_current_admin)],
 )
 async def create_user_by_admin_route(
-    data: user_schemas.UserCreateAdminSchema,
+    data: schemas.UserCreateAdminSchema,
     session: AsyncSession = Depends(dependencies.get_session),
-) -> user_schemas.UserReadAdminSchema:
+) -> schemas.UserReadAdminSchema:
     """
     Создать нового пользователя.
 
@@ -101,13 +101,13 @@ async def create_user_by_admin_route(
     summary="Обновить данные текущего пользователя.",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(dependencies.get_current_user)],
-    response_model=user_schemas.UserReadSchema,
+    response_model=schemas.UserReadSchema,
 )
 async def update_user_route(
-    data: user_schemas.UserUpdateSchema,
+    data: schemas.UserUpdateSchema,
     session: AsyncSession = Depends(dependencies.get_session),
     user: UserModel = Depends(dependencies.get_current_user),
-) -> user_schemas.UserReadSchema:
+) -> schemas.UserReadSchema:
     """
     Обновить данные текущего пользователя.
 
@@ -126,9 +126,9 @@ async def update_user_route(
 )
 async def update_user_by_admin_route(
     id: str,
-    data: user_schemas.UserUpdateAdminSchema,
+    data: schemas.UserUpdateAdminSchema,
     session: AsyncSession = Depends(dependencies.get_session),
-) -> user_schemas.UserReadAdminSchema:
+) -> schemas.UserReadAdminSchema:
     """
     Обновить данные пользователя.
 
@@ -148,7 +148,7 @@ async def update_user_by_admin_route(
 async def delete_user_by_admin_route(
     id: str,
     session: AsyncSession = Depends(dependencies.get_session),
-) -> None:
+):
     """
     Удалить пользователя.
 

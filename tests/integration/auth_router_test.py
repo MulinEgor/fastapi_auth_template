@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import src.auth.schemas as auth_schemas
 import src.users.schemas as user_schemas
 from src import utils
-from src.auth.routers import auth_router
-from src.users.repositories import UserRepository
+from src.auth import auth_router
+from src.users.repository import UserRepository
 from tests.conftest import faker
 from tests.integration.conftest import BaseTestRouter
 
@@ -45,7 +45,7 @@ class TestAuthRouter(BaseTestRouter):
         assert tokens.expires_at is not None
         assert tokens.token_type == "Bearer"
 
-        user_db = await UserRepository.find_one_or_none(
+        user_db = await UserRepository.get_one_or_none(
             session=session,
             email=schema.email,
         )
@@ -60,7 +60,7 @@ class TestAuthRouter(BaseTestRouter):
         """Проверка авторизации пользователя."""
 
         email, password = faker.email(), faker.password()
-        await UserRepository.add(
+        await UserRepository.create(
             session=session,
             obj_in=user_schemas.UserCreateRepositorySchema(
                 email=email,
