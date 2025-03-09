@@ -1,25 +1,20 @@
 """Модуль интерфейсов для CRUD операций с моделям БД."""
 
-from typing import Any, Generic, Tuple, TypeVar
+from typing import Any, Generic, Tuple
 
-from pydantic import BaseModel
 from sqlalchemy import Select, asc, delete, desc, insert, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import func
 
+import src.base.types as types
 from src import constants
-from src.database import Base
-
-ModelType = TypeVar("ModelType", bound=Base)
-CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
-UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 
 class BaseRepository(
     Generic[
-        ModelType,
-        CreateSchemaType,
-        UpdateSchemaType,
+        types.ModelType,
+        types.CreateSchemaType,
+        types.UpdateSchemaType,
     ],
 ):
     """
@@ -36,8 +31,8 @@ class BaseRepository(
     async def create(
         cls,
         session: AsyncSession,
-        obj_in: CreateSchemaType | dict[str, Any],
-    ) -> ModelType:
+        obj_in: types.CreateSchemaType | dict[str, Any],
+    ) -> types.ModelType:
         """
         Добавить запись в текущую сессию.
 
@@ -67,7 +62,7 @@ class BaseRepository(
         cls,
         session: AsyncSession,
         data: list[dict[str, Any]],
-    ) -> list[ModelType]:
+    ) -> list[types.ModelType]:
         """
         Добавить несколько записей в текущую сессию.
 
@@ -91,7 +86,7 @@ class BaseRepository(
         session: AsyncSession,
         *filter,
         **filter_by,
-    ) -> ModelType | None:
+    ) -> types.ModelType | None:
         """
         Возвращает как максимум один объект или выбрасывает исключение.
 
@@ -118,7 +113,7 @@ class BaseRepository(
         limit: int = constants.DEFAULT_QUERY_LIMIT,
         *filter,
         **filter_by,
-    ) -> list[ModelType]:
+    ) -> list[types.ModelType]:
         """
         Возвращает все модели, соответствующие параметрам поиска.
         Если совпадений не найдено, возвращает пустой список.
@@ -154,7 +149,7 @@ class BaseRepository(
         limit: int = constants.DEFAULT_QUERY_LIMIT,
         *filter,
         **filter_by,
-    ) -> list[ModelType]:
+    ) -> list[types.ModelType]:
         """
         Гибкий поиск всех записей с использованием ilike.
 
@@ -192,7 +187,7 @@ class BaseRepository(
         limit: int | None = None,
         *filter,
         **filter_by,
-    ) -> list[ModelType]:
+    ) -> list[types.ModelType]:
         """
         Поиск всех записей, отсортированных по указанному полю.
 
@@ -229,8 +224,8 @@ class BaseRepository(
         session: AsyncSession,
         limit: int | None,
         offset: int | None,
-        stmt: Select[Tuple[ModelType]],
-    ) -> list[ModelType]:
+        stmt: Select[Tuple[types.ModelType]],
+    ) -> list[types.ModelType]:
         """
         Применить пагинацию к финальному выражению
         для запроса в БД, предварительно составленному с учетом фильтрации,
@@ -258,7 +253,7 @@ class BaseRepository(
         session: AsyncSession,
         limit: int | None,
         offset: int | None,
-        stmt: Select[Tuple[ModelType]],
+        stmt: Select[Tuple[types.ModelType]],
     ) -> list[any]:
         """
         Применить пагинацию к финальному выражению
@@ -287,8 +282,8 @@ class BaseRepository(
         cls,
         *where,
         session: AsyncSession,
-        obj_in: UpdateSchemaType | dict[str, Any],
-    ) -> ModelType:
+        obj_in: types.UpdateSchemaType | dict[str, Any],
+    ) -> types.ModelType:
         """
         Обновить запись в текущей сессии.
 
@@ -320,7 +315,7 @@ class BaseRepository(
         cls,
         session: AsyncSession,
         data: list[dict[str, Any]],
-    ) -> list[ModelType]:
+    ) -> list[types.ModelType]:
         """
         Обновить несколько записей в текущей сессии.
 
@@ -428,7 +423,7 @@ class BaseRepository(
     async def count_subquery(
         cls,
         session: AsyncSession,
-        stmt: Select[Tuple[ModelType]],
+        stmt: Select[Tuple[types.ModelType]],
     ) -> int:
         """
         Получить общее количество сущностей в БД, используя финальное выражение

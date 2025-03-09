@@ -7,9 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import src.auth.schemas as auth_schemas
 import src.users.schemas as user_schemas
 from src import constants
+from src.users import user_router
 from src.users.models import UserModel
-from src.users.repositories import UserRepository
-from src.users.routers import user_router
+from src.users.repository import UserRepository
 from tests.integration.conftest import BaseTestRouter
 
 

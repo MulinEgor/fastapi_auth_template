@@ -19,9 +19,9 @@ from sqlalchemy.ext.asyncio import (
 import src.auth.schemas as auth_schemas
 import src.users.schemas as user_schemas
 from src import utils
-from src.auth.services import JWTService
+from src.auth import JWTService
 from src.settings import settings
-from src.users.models import UserModel
+from src.users import UserModel
 
 faker = Faker()
 

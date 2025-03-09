@@ -5,7 +5,7 @@ from typing import Tuple
 from sqlalchemy import Select, select
 
 import src.users.schemas as schemas
-from src.base_repository import BaseRepository
+from src.base import BaseRepository
 from src.users.models import UserModel
 
 

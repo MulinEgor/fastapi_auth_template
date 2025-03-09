@@ -6,8 +6,8 @@ import src.auth.schemas as auth_schemas
 import src.users.schemas as user_schemas
 from src import exceptions, utils
 from src.auth.services.jwt_service import JWTService
-from src.users.repositories import UserRepository
-from src.users.services import UserService
+from src.users.repository import UserRepository
+from src.users.service import UserService
 
 
 class AuthService:

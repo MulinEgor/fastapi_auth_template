@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy import TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.constants import CURRENT_TIMESTAMP_UTC
+from src import constants
 from src.database import Base
 
 
@@ -33,10 +33,10 @@ class UserModel(Base):
     )
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
-        server_default=CURRENT_TIMESTAMP_UTC,
+        server_default=constants.CURRENT_TIMESTAMP_UTC,
     )
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
-        server_default=CURRENT_TIMESTAMP_UTC,
-        onupdate=CURRENT_TIMESTAMP_UTC,
+        server_default=constants.CURRENT_TIMESTAMP_UTC,
+        onupdate=constants.CURRENT_TIMESTAMP_UTC,
     )

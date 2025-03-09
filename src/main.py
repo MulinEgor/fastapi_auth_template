@@ -4,11 +4,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
-from src.auth.routers import auth_router
+from src.auth import auth_router
 from src.constants import CORS_HEADERS, CORS_METHODS
 from src.healthcheck import health_check_router
 from src.settings import settings
-from src.users.routers import user_router
+from src.users import user_router
 
 app = FastAPI(
     title="FastAPI Template",

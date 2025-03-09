@@ -7,9 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import src.users.schemas as schemas
 from src import exceptions, utils
-from src.base_service import BaseService
+from src.base import BaseService
 from src.users.models import UserModel
-from src.users.repositories import UserRepository
+from src.users.repository import UserRepository
 
 
 class UserService(

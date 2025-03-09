@@ -12,8 +12,8 @@ from src import constants
 from src.constants import AUTH_HEADER_NAME
 from src.database import SessionLocal
 from src.settings import settings
-from src.users.models.user import UserModel
-from src.users.repositories.user_repository import UserRepository
+from src.users import UserModel
+from src.users.repository import UserRepository
 
 oauth2_scheme = APIKeyHeader(name=AUTH_HEADER_NAME, auto_error=False)
 

@@ -1,14 +1,12 @@
-"""Эндпоинты для проверки состояние работы API."""
+"""Модуль для Pydantic схем для модуля healthcheck."""
 
 from typing import Literal
 
-from fastapi import APIRouter, status
 from pydantic import BaseModel, Field
 
 from src.settings import settings
 
 
-# MARK: Schema
 class HealthCheckSchema(BaseModel):
     """Схема ответа для проверки состояния работы API."""
 
@@ -24,18 +22,3 @@ class HealthCheckSchema(BaseModel):
         default="OK",
         description="Статус API.",
     )
-
-
-# MARK: Router
-health_check_router = APIRouter(prefix="/health_check", tags=["Health Check"])
-
-
-@health_check_router.get(
-    path="",
-    summary="Проверить состояние работы API",
-    status_code=status.HTTP_200_OK,
-)
-async def health_check() -> HealthCheckSchema:
-    """Проверить состояние работы API."""
-
-    return HealthCheckSchema()

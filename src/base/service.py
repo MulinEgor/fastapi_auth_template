@@ -7,29 +7,20 @@ from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.base_repository import BaseRepository
-
-ModelType = TypeVar("ModelType")
-CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
-GetSchemaType = TypeVar("GetSchemaType", bound=BaseModel)
-UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
-GetQuerySchemaType = TypeVar("GetQuerySchemaType", bound=BaseModel)
-GetListSchemaType = TypeVar("GetListSchemaType", bound=BaseModel)
-
-ConflictExceptionType = TypeVar("ConflictExceptionType", bound=Exception)
-NotFoundExceptionType = TypeVar("NotFoundExceptionType", bound=Exception)
+import src.base.types as types
+from src.base import BaseRepository
 
 
 class BaseService(
     Generic[
-        ModelType,
-        CreateSchemaType,
-        GetSchemaType,
-        GetQuerySchemaType,
-        GetListSchemaType,
-        UpdateSchemaType,
-        ConflictExceptionType,
-        NotFoundExceptionType,
+        types.ModelType,
+        types.CreateSchemaType,
+        types.GetSchemaType,
+        types.GetQuerySchemaType,
+        types.GetListSchemaType,
+        types.UpdateSchemaType,
+        types.ConflictExceptionType,
+        types.NotFoundExceptionType,
     ],
 ):
     """
@@ -39,7 +30,11 @@ class BaseService(
         repository: Репозиторий для работы с моделью.
     """
 
-    repository: BaseRepository[ModelType, CreateSchemaType, UpdateSchemaType]
+    repository: BaseRepository[
+        types.ModelType,
+        types.CreateSchemaType,
+        types.UpdateSchemaType,
+    ]
 
     # MARK: Utils
     @classmethod
@@ -70,8 +65,8 @@ class BaseService(
     async def create(
         cls,
         session: AsyncSession,
-        data: CreateSchemaType,
-    ) -> GetSchemaType:
+        data: types.CreateSchemaType,
+    ) -> types.GetSchemaType:
         """
         Создать объект в БД.
 
@@ -94,11 +89,12 @@ class BaseService(
             )
             await session.commit()
 
-            schema_class = await cls.get_schema_class_by_type(GetSchemaType)
+            schema_class = await cls.get_schema_class_by_type(types.GetSchemaType)
+
             return schema_class.model_validate(obj_db)
 
         except IntegrityError as ex:
-            raise ConflictExceptionType(exc=ex)
+            raise types.ConflictExceptionType(exc=ex)
 
     # MARK: Get
     @classmethod
@@ -106,7 +102,7 @@ class BaseService(
         cls,
         session: AsyncSession,
         id: int | uuid.UUID,
-    ) -> GetSchemaType:
+    ) -> types.GetSchemaType:
         """
         Поиск объекта по ID.
 
@@ -125,17 +121,17 @@ class BaseService(
         obj_db = await cls.repository.get_one_or_none(session=session, id=id)
 
         if obj_db is None:
-            raise NotFoundExceptionType()
+            raise types.NotFoundExceptionType()
 
-        schema_class = await cls.get_schema_class_by_type(GetSchemaType)
+        schema_class = await cls.get_schema_class_by_type(types.GetSchemaType)
         return schema_class.model_validate(obj_db)
 
     @classmethod
     async def get_all(
         cls,
         session: AsyncSession,
-        query_params: GetQuerySchemaType,
-    ) -> GetListSchemaType:
+        query_params: types.GetQuerySchemaType,
+    ) -> types.GetListSchemaType:
         """
         Получить список объектов и их общее количество
         с фильтрацией по query параметрам, отличным от None.
@@ -162,17 +158,23 @@ class BaseService(
         )
 
         if not objects_db:
-            raise NotFoundExceptionType()
+            raise types.NotFoundExceptionType()
 
         objects_count = await cls.repository.count_subquery(
             session=session,
             stmt=base_stmt,
         )
 
-        schema_class = await cls.get_schema_class_by_type(GetListSchemaType)
-        return schema_class(
+        # Получаем класс схемы для одного объекта
+        item_schema_class = await cls.get_schema_class_by_type(types.GetSchemaType)
+        # Преобразуем каждый объект в схему
+        objects_schema = [item_schema_class.model_validate(obj) for obj in objects_db]
+
+        # Получаем класс схемы для списка и создаем его экземпляр
+        list_schema_class = await cls.get_schema_class_by_type(types.GetListSchemaType)
+        return list_schema_class(
             count=objects_count,
-            data=objects_db,
+            data=objects_schema,
         )
 
     # MARK: Update
@@ -181,8 +183,8 @@ class BaseService(
         cls,
         session: AsyncSession,
         id: int | uuid.UUID,
-        data: UpdateSchemaType,
-    ) -> GetSchemaType:
+        data: types.UpdateSchemaType,
+    ) -> types.GetSchemaType:
         """
         Обновить данные объекта.
 
@@ -212,9 +214,9 @@ class BaseService(
             await session.commit()
 
         except IntegrityError as ex:
-            raise ConflictExceptionType(exc=ex)
+            raise types.ConflictExceptionType(exc=ex)
 
-        schema_class = await cls.get_schema_class_by_type(GetSchemaType)
+        schema_class = await cls.get_schema_class_by_type(types.GetSchemaType)
         return schema_class.model_validate(updated_obj)
 
     # MARK: Delete

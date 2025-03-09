@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import src.users.schemas as schemas
 from src import dependencies
 from src.users.models import UserModel
-from src.users.services import UserService
+from src.users.service import UserService
 
 user_router = APIRouter(
     prefix="/users",
