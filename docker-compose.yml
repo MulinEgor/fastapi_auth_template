@@ -1,5 +1,5 @@
 # MARK: Base
-x-postgres-base: &postgres-base
+x-db-base: &db-base
   image: postgres:16
   restart: always
   healthcheck:
@@ -10,16 +10,17 @@ x-postgres-base: &postgres-base
     timeout: 5s
     retries: 5
 
-x-app-base: &app-base
+x-api-base: &api-base
   build:
     context: ./
   restart: always
 
 # MARK: Dev
 services:
-  postgres-dev:
+  db-dev:
     profiles: [ "dev" ]
-    <<: *postgres-base
+    container_name: "db-dev"
+    <<: *db-base
     env_file: "./src/.env"
     ports:
       - 5432:5432
@@ -31,9 +32,10 @@ services:
     networks:
       - dev
 
-  app-dev:
+  api-dev:
     profiles: [ "dev" ]
-    <<: *app-base
+    container_name: "api-dev"
+    <<: *api-base
     command: uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
     env_file: "./src/.env"
     volumes:
@@ -44,21 +46,23 @@ services:
     expose:
       - 8000
     depends_on:
-      postgres-dev:
+      db-dev:
         condition: service_healthy
     networks:
       - dev
 
   # MARK: Test
-  postgres-test:
+  db-test:
     profiles: [ "test" ]
-    <<: *postgres-base
+    container_name: "db-test"
+    <<: *db-base
     env_file: "./src/.env.test"
     networks:
       - test
 
-  app-test:
+  api-test:
     profiles: [ "test" ]
+    container_name: "api-test"
     build:
       context: ./
       args:
@@ -77,7 +81,7 @@ services:
       - ./:/app
       - /app/.venv
     depends_on:
-      postgres-test:
+      db-test:
         condition: service_healthy
     networks:
       - test
