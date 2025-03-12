@@ -12,14 +12,14 @@
 1. Установить зависимости (можно использовать pip, но рекомендую uv, он намного быстрее): 
 
    С помощью pip:
-```bash
-pip install . 
-```
+   ```bash
+   pip install . 
+   ```
 
    С помощью uv:
-```bash
-uv sync --group dev
-```
+   ```bash
+   uv sync --group dev
+   ```
 
 2. Создать `.env` на основании `.env.example`:
 
