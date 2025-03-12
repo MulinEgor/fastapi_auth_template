@@ -28,9 +28,9 @@ faker = Faker()
 
 # MARK: DBSession
 @pytest_asyncio.fixture(scope="module")
-async def engine(request, worker_id) -> AsyncGenerator[AsyncEngine, None]:
+async def engine(request) -> AsyncGenerator[AsyncEngine, None]:
     """
-    Создает экземпляр `AsyncEngine' с URL-адресом базы данных,
+    Создает экземпляр `AsyncEngine` с URL-адресом базы данных,
     соответствующим процессу pytest.
 
     Область действия `module` задается, поскольку каждый модуль c тестами
@@ -39,10 +39,7 @@ async def engine(request, worker_id) -> AsyncGenerator[AsyncEngine, None]:
     """
 
     engine = create_async_engine(
-        url=(
-            f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@"
-            f"{settings.POSTGRES_HOST}-{worker_id}:{settings.POSTGRES_PORT}/{worker_id}"
-        ),
+        url=settings.DATABASE_URL,
         poolclass=NullPool,
     )
 
@@ -157,7 +154,7 @@ async def user_admin_db(session: AsyncSession) -> UserModel:
 
 
 @pytest_asyncio.fixture
-async def user_create_data() -> user_schemas.UserReadAdminSchema:
+async def user_create_data() -> user_schemas.UserGetAdminSchema:
     """
     Подготовленные данные для создания
     пользователя в БД администратором.

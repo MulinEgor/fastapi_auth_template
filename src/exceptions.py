@@ -1,8 +1,7 @@
 from fastapi import HTTPException, status
 
 
-# MARK: Base
-class BaseConflictException(HTTPException):
+class ConflictException(HTTPException):
     """
     Основной класс исключений в случае конфликта при создании данных.
 
@@ -25,7 +24,7 @@ class BaseConflictException(HTTPException):
         )
 
 
-class BaseNotFoundException(HTTPException):
+class NotFoundException(HTTPException):
     """
     Основной класс исключений в случае отсутствия данных.
 
@@ -43,7 +42,7 @@ class BaseNotFoundException(HTTPException):
         )
 
 
-class BaseBadRequestException(HTTPException):
+class BadRequestException(HTTPException):
     """
     Основной класс исключений при некорректном запросе.
 
@@ -61,7 +60,7 @@ class BaseBadRequestException(HTTPException):
         )
 
 
-class BaseForbiddenException(HTTPException):
+class ForbiddenException(HTTPException):
     """
     Основной класс исключений при недостаточных
     правах для выполнения запроса.
@@ -78,25 +77,6 @@ class BaseForbiddenException(HTTPException):
             status_code=status_code,
             detail=self.default_message,
         )
-
-
-# MARK: Users
-class UserNotFoundException(BaseNotFoundException):
-    """Исключение при отсутствии пользователя."""
-
-    default_message = "Пользователь не найден."
-
-
-class UserAlreadyExistsException(BaseConflictException):
-    """Исключение при попытке создать пользователя, который уже существует."""
-
-    default_message = "Пользователь уже существует."
-
-
-class UserExchangeLinkIsInvalid(BaseBadRequestException):
-    """Возникает, если передана некорректная ссылка на обмен."""
-
-    default_message = "Передана некорректная ссылка на обмен."
 
 
 # MARK: JWT

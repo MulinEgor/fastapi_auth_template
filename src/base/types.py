@@ -10,6 +10,3 @@ GetSchemaType = TypeVar("GetSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 GetQuerySchemaType = TypeVar("GetQuerySchemaType", bound=BaseModel)
 GetListSchemaType = TypeVar("GetListSchemaType", bound=BaseModel)
-
-ConflictExceptionType = TypeVar("ConflictExceptionType", bound=Exception)
-NotFoundExceptionType = TypeVar("NotFoundExceptionType", bound=Exception)

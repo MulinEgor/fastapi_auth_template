@@ -11,7 +11,7 @@ from src.base.schemas import DataListReadBaseSchema, PaginationBaseSchema
 
 
 # MARK: User
-class UserReadSchema(BaseModel):
+class UserGetSchema(BaseModel):
     """Pydantic схема для получения пользователя."""
 
     id: uuid.UUID = Field(description="ID пользователя.")
@@ -70,7 +70,7 @@ class UserUpdateRepositorySchema(BaseModel):
 
 
 # MARK: Admin
-class UserReadAdminSchema(UserReadSchema):
+class UserGetAdminSchema(UserGetSchema):
     """
     Pydantic схема для отображения
     пользователя в запросах администратора.
@@ -114,10 +114,10 @@ class UserUpdateRepositoryAdminSchema(UserUpdateRepositorySchema):
     )
 
 
-class UserListReadSchema(DataListReadBaseSchema):
+class UserListGetSchema(DataListReadBaseSchema):
     """Pydantic схема для получения списка пользователя."""
 
-    data: list[UserReadAdminSchema] = Field(
+    data: list[UserGetAdminSchema] = Field(
         description="Список пользователей, соответствующих query параметрам.",
     )
 

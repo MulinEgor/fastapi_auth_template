@@ -16,12 +16,10 @@ class UserService(
     BaseService[
         UserModel,
         schemas.UserCreateSchema,
-        schemas.UserReadAdminSchema,
+        schemas.UserGetAdminSchema,
         schemas.UsersQuerySchema,
-        schemas.UserListReadSchema,
+        schemas.UserListGetSchema,
         schemas.UserUpdateSchema,
-        exceptions.UserAlreadyExistsException,
-        exceptions.UserNotFoundException,
     ],
 ):
     """Сервис для работы с пользователями."""
@@ -34,7 +32,7 @@ class UserService(
         cls,
         session: AsyncSession,
         data: schemas.UserCreateSchema | schemas.UserCreateAdminSchema,
-    ) -> schemas.UserReadAdminSchema:
+    ) -> schemas.UserGetAdminSchema:
         """
         Создать пользователя в БД.
 
@@ -47,7 +45,7 @@ class UserService(
             UserReadAdminSchema: Добавленный пользователь.
 
         Raises:
-            UserAlreadyExistsException: Пользователь уже существует.
+            ConflictException: Пользователь уже существует.
         """
 
         try:
@@ -64,10 +62,10 @@ class UserService(
                 obj_in=data,
             )
             await session.commit()
-            return schemas.UserReadAdminSchema.model_validate(user)
+            return schemas.UserGetAdminSchema.model_validate(user)
 
         except IntegrityError as ex:
-            raise exceptions.UserAlreadyExistsException(exc=ex)
+            raise exceptions.ConflictException(exc=ex)
 
     # MARK: Update
     @classmethod
@@ -76,7 +74,7 @@ class UserService(
         session: AsyncSession,
         user_id: uuid.UUID,
         data: schemas.UserUpdateSchema | schemas.UserUpdateAdminSchema,
-    ) -> schemas.UserReadAdminSchema:
+    ) -> schemas.UserGetAdminSchema:
         """
         Обновить данные пользователя.
 
@@ -90,8 +88,8 @@ class UserService(
             UserReadAdminSchema: Обновленный пользователь.
 
         Raises:
-            UserNotFoundException: Пользователь не найден.
-            UserAlreadyExistsException: Пользователь с такими данными уже существует.
+            NotFoundException: Пользователь не найден.
+            ConflictException: Пользователь с такими данными уже существует.
         """
 
         # Поиск пользователя в БД
@@ -117,6 +115,6 @@ class UserService(
             await session.commit()
 
         except IntegrityError as ex:
-            raise exceptions.UserAlreadyExistsException(exc=ex)
+            raise exceptions.ConflictException(exc=ex)
 
-        return schemas.UserReadAdminSchema.model_validate(updated_user)
+        return schemas.UserGetAdminSchema.model_validate(updated_user)

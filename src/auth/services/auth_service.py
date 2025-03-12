@@ -6,8 +6,7 @@ import src.auth.schemas as auth_schemas
 import src.users.schemas as user_schemas
 from src import exceptions, utils
 from src.auth.services.jwt_service import JWTService
-from src.users.repository import UserRepository
-from src.users.service import UserService
+from src.users import UserRepository, UserService
 
 
 class AuthService:
@@ -60,7 +59,7 @@ class AuthService:
             JWTGetSchema: access и refresh токены пользователя.
 
         Raises:
-            UserNotFoundException: Пользователь не найден.
+            NotFoundException: Пользователь не найден.
         """
 
         # Хэширование пароля
@@ -74,7 +73,7 @@ class AuthService:
         )
 
         if user is None:
-            raise exceptions.UserNotFoundException
+            raise exceptions.NotFoundException()
 
         # Создание токенов
         tokens = await JWTService.create_tokens(user_id=user.id)

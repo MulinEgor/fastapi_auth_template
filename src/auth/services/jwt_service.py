@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import src.auth.schemas as schemas
 from src import constants, exceptions
 from src.settings import settings
-from src.users.repository import UserRepository
+from src.users import UserRepository
 
 
 class JWTService:
@@ -42,14 +42,14 @@ class JWTService:
             user_id = payload.get("id")
 
             if not user_id:
-                raise exceptions.InvalidTokenException
+                raise exceptions.InvalidTokenException()
 
             return user_id
         except Exception as e:
             if isinstance(e, jwt.ExpiredSignatureError):
-                raise exceptions.TokenExpiredException
+                raise exceptions.TokenExpiredException()
             else:
-                raise exceptions.InvalidTokenException
+                raise exceptions.InvalidTokenException()
 
     # MARK: Create
     @classmethod
@@ -138,7 +138,7 @@ class JWTService:
             InvalidTokenException: Невалидный токен `HTTP_401_UNAUTHORIZED`.
             TokenExpiredException: Время действия токена истекло
                 `HTTP_401_UNAUTHORIZED`.
-            UserNotFoundException: Пользователь не найден.
+            NotFoundException: Пользователь не найден.
         """
 
         refresh_token = tokens_data.refresh_token.removeprefix("Bearer ")
@@ -151,6 +151,6 @@ class JWTService:
         )
 
         if user_db is None:
-            raise exceptions.UserNotFoundException
+            raise exceptions.NotFoundException()
 
         return await cls.create_tokens(user_id=user_id)

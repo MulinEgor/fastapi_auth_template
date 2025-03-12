@@ -50,21 +50,10 @@ services:
       - dev
 
   # MARK: Test
-  postgres-worker-gw0:
+  postgres-test:
     profiles: [ "test" ]
     <<: *postgres-base
     env_file: "./src/.env.test"
-    environment:
-      - POSTGRES_DB=gw0
-    networks:
-      - test
-
-  postgres-worker-gw1:
-    profiles: [ "test" ]
-    <<: *postgres-base
-    env_file: "./src/.env.test"
-    environment:
-      - POSTGRES_DB=gw1
     networks:
       - test
 
@@ -75,11 +64,9 @@ services:
       args:
         ENV: test
     command: sh -c "
-      alembic -x worker_id=gw0 upgrade heads &&
-      alembic -x worker_id=gw1 upgrade heads &&
+      alembic upgrade heads &&
       coverage run --source='.' \
       -m pytest \
-      -n 2 \
       --dist loadscope \
       -s -r A \
       --rootdir=/app/ \
@@ -90,9 +77,7 @@ services:
       - ./:/app
       - /app/.venv
     depends_on:
-      postgres-worker-gw0:
-        condition: service_healthy
-      postgres-worker-gw1:
+      postgres-test:
         condition: service_healthy
     networks:
       - test
