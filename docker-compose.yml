@@ -1,5 +1,5 @@
 # MARK: Base
-x-postgres-base: &postgres-base
+x-db-base: &db-base
   image: postgres:16
   restart: always
   healthcheck:
@@ -10,19 +10,21 @@ x-postgres-base: &postgres-base
     timeout: 5s
     retries: 5
 
-x-app-base: &app-base
+x-api-base: &api-base
   build:
     context: ./
   restart: always
 
 # MARK: Dev
 services:
-  postgres-dev:
+  db-dev:
     profiles: [ "dev" ]
-    <<: *postgres-base
-    env_file: "./src/.env"
+    container_name: "db-dev"
+    <<: *db-base
     ports:
       - 5432:5432
+    env_file:
+      - ./.env
     expose:
       - 5432
     volumes:
@@ -31,68 +33,59 @@ services:
     networks:
       - dev
 
-  app-dev:
+  api-dev:
     profiles: [ "dev" ]
-    <<: *app-base
+    container_name: "api-dev"
+    <<: *api-base
     command: uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
-    env_file: "./src/.env"
     volumes:
       - ./:/app
       - /app/.venv
+    env_file:
+      - ./.env
     ports:
       - 8000:8000
     expose:
       - 8000
     depends_on:
-      postgres-dev:
+      db-dev:
         condition: service_healthy
     networks:
       - dev
 
   # MARK: Test
-  postgres-worker-gw0:
+  db-test:
     profiles: [ "test" ]
-    <<: *postgres-base
-    env_file: "./src/.env.test"
-    environment:
-      - POSTGRES_DB=gw0
+    container_name: "db-test"
+    <<: *db-base
+    env_file:
+      - ./.env.test
     networks:
       - test
 
-  postgres-worker-gw1:
+  api-test:
     profiles: [ "test" ]
-    <<: *postgres-base
-    env_file: "./src/.env.test"
-    environment:
-      - POSTGRES_DB=gw1
-    networks:
-      - test
-
-  app-test:
-    profiles: [ "test" ]
+    container_name: "api-test"
     build:
       context: ./
       args:
         ENV: test
     command: sh -c "
-      alembic -x worker_id=gw0 upgrade heads &&
-      alembic -x worker_id=gw1 upgrade heads &&
+      alembic upgrade heads &&
       coverage run --source='.' \
       -m pytest \
-      -n 2 \
       --dist loadscope \
       -s -r A \
       --rootdir=/app/ \
       --disable-pytest-warnings && \
       coverage html"
-    env_file: "./src/.env.test"
+    env_file:
+      - ./.env.test
     volumes:
       - ./:/app
       - /app/.venv
     depends_on:
-      postgres-worker-gw0:
-        condition: service_healthy
-      postgres-worker-gw1:
+      db-test:
         condition: service_healthy
     networks:
       - test

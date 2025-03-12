@@ -8,47 +8,48 @@
 [![Static Badge](https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
 
-## Project Setup and Launch
+## Запуск проекта
+1. Установить зависимости (можно использовать pip, но рекомендую uv, он намного быстрее): 
 
-1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/).
-
-2. Install dependencies, including dev ones:
-
+С помощью pip:
 ```bash
-uv sync --extra dev
+pip install . 
 ```
 
-3. Create `.env` based on `.env.example`:
-
+С помощью uv:
 ```bash
-cp -r src/.env.example src/.env`
+uv sync --group dev
 ```
 
-6. Start API and PostgreSQL in Docker containers:
+2. Создать `.env` на основании `.env.example`:
+
+```bash
+cp -r .env.example .env
+```
+
+3. Запустить API и БД в Docker контейнерах:
 ```bash
 make start_dev
 ```
 
-7. Apply migrations:
+4. Применить миграции:
 ```bash
 make migrate
 ```
 
-8. Docs:
+5. Документация API и доступные эндпоинт:
 * Swagger UI: http://127.0.0.1:8000/docs
 * ReDoc: http://127.0.0.1:8000/redoc
 
-9. Stoppage
+6. Для остановки контейнеров выполнить
 ```bash
 make stop_dev
 ```
 
-## Tests
-1. Before starting tests, you need to create `.env.test` based on`.env.test.example`:
+## Тесты
+1. Перед запуском тестов необходимо создать `.env.test` на основе`.env.test.example`:
 ```bash
-cp -r src/.env.test.example src/.env.test
+cp -r .env.test.example .env.test
 ```
 
-2. By default, tests run on 2 PostgreSQL containers.
-
-3. After running tests, in `htmlcov/index.html` you can see test coverage.
+2. Тесты запускаются из независимой базы данных Postgres с помощью команды `make test`.

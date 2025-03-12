@@ -20,18 +20,7 @@ sys.path.insert(0, dirname(dirname(dirname(abspath(__file__)))))
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# В режиме тестов применяем миграции и фикстуры на обе тестовые БД.
-worker_id = context.get_x_argument(as_dictionary=True).get("worker_id")
-if worker_id:
-    db_url = (
-        f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@"
-        f"{settings.POSTGRES_HOST}-{worker_id}:{settings.POSTGRES_PORT}/{worker_id}?async_fallback=True"
-    )
-    config.set_main_option("sqlalchemy.url", db_url)
-else:
-    config.set_main_option(
-        "sqlalchemy.url", f"{settings.DATABASE_URL}?async_fallback=True"
-    )
+config.set_main_option("sqlalchemy.url", f"{settings.DATABASE_URL}?async_fallback=True")
 
 # add your model's MetaData object here
 # for 'autogenerate' support

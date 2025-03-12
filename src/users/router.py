@@ -20,18 +20,18 @@ user_router = APIRouter(
     summary="Получить данные текущего пользователя.",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(dependencies.get_current_user)],
-    response_model=schemas.UserReadSchema,
+    response_model=schemas.UserGetSchema,
 )
 async def get_current_user_route(
     user: UserModel = Depends(dependencies.get_current_user),
-) -> schemas.UserReadSchema:
+) -> schemas.UserGetSchema:
     """
     Получить данные текущего пользователя.
 
     Доступно авторизованному пользователю.
     """
 
-    return schemas.UserReadSchema.model_validate(user)
+    return schemas.UserGetSchema.model_validate(user)
 
 
 @user_router.get(
@@ -39,12 +39,12 @@ async def get_current_user_route(
     summary="Получить данные пользователя по ID.",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(dependencies.get_current_user)],
-    response_model=schemas.UserReadSchema,
+    response_model=schemas.UserGetSchema,
 )
 async def get_user_by_id_route(
     id: str,
     session: AsyncSession = Depends(dependencies.get_session),
-) -> schemas.UserReadSchema:
+) -> schemas.UserGetSchema:
     """
     Получить данные пользователя по id.
 
@@ -59,12 +59,12 @@ async def get_user_by_id_route(
     summary="Администратор. Получить список пользователей.",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(dependencies.get_current_admin)],
-    response_model=schemas.UserListReadSchema,
+    response_model=schemas.UserListGetSchema,
 )
 async def get_users_by_admin_route(
     query_params: schemas.UsersQuerySchema = Query(),
     session: AsyncSession = Depends(dependencies.get_session),
-) -> schemas.UserListReadSchema:
+) -> schemas.UserListGetSchema:
     """
     Получить список пользователей и их общее количество
     с фильтрацией по query параметрам, отличным от None.
@@ -85,7 +85,7 @@ async def get_users_by_admin_route(
 async def create_user_by_admin_route(
     data: schemas.UserCreateAdminSchema,
     session: AsyncSession = Depends(dependencies.get_session),
-) -> schemas.UserReadAdminSchema:
+) -> schemas.UserGetAdminSchema:
     """
     Создать нового пользователя.
 
@@ -101,13 +101,13 @@ async def create_user_by_admin_route(
     summary="Обновить данные текущего пользователя.",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(dependencies.get_current_user)],
-    response_model=schemas.UserReadSchema,
+    response_model=schemas.UserGetSchema,
 )
 async def update_user_route(
     data: schemas.UserUpdateSchema,
     session: AsyncSession = Depends(dependencies.get_session),
     user: UserModel = Depends(dependencies.get_current_user),
-) -> schemas.UserReadSchema:
+) -> schemas.UserGetSchema:
     """
     Обновить данные текущего пользователя.
 
@@ -128,7 +128,7 @@ async def update_user_by_admin_route(
     id: str,
     data: schemas.UserUpdateAdminSchema,
     session: AsyncSession = Depends(dependencies.get_session),
-) -> schemas.UserReadAdminSchema:
+) -> schemas.UserGetAdminSchema:
     """
     Обновить данные пользователя.
 

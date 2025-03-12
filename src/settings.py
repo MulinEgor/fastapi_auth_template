@@ -1,11 +1,8 @@
 """Настройки конфигурации основного API."""
 
-import os
 from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-ENV_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
 
 
 class Settings(BaseSettings):
@@ -37,7 +34,7 @@ class Settings(BaseSettings):
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
-    model_config = SettingsConfigDict(env_file=ENV_FILE_PATH)
+    model_config = SettingsConfigDict()
 
 
 settings = Settings()
