@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, Field
 
-from src import constants
+from src.core import constants
 
 
 class PaginationBaseSchema(BaseModel):
@@ -26,4 +26,8 @@ class DataListReadBaseSchema(BaseModel):
     )
     data: list = Field(
         description="Список сущностей.",
+    )
+    asc: bool = Field(
+        default=True,
+        description="Сортировка по возрастанию по дате создания.",
     )

@@ -6,10 +6,10 @@ from typing import Literal
 import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.auth.schemas as schemas
-from src import constants, exceptions
-from src.settings import settings
-from src.users import UserRepository
+import src.modules.auth.schemas as schemas
+from src.core import constants, exceptions
+from src.core.settings import settings
+from src.modules.users import UserRepository
 
 
 class JWTService:

@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from src.settings import settings
+from src.core.settings import settings
 
 
 class HealthCheckSchema(BaseModel):

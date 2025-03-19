@@ -7,15 +7,13 @@ from fastapi import Depends
 from fastapi.security import APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.exceptions as exceptions
-from src import constants
-from src.constants import AUTH_HEADER_NAME
-from src.database import SessionLocal
-from src.settings import settings
-from src.users import UserModel
-from src.users.repository import UserRepository
+import src.core.exceptions as exceptions
+from src.core import constants
+from src.core.database import SessionLocal
+from src.core.settings import settings
+from src.modules.users import UserModel, UserRepository
 
-oauth2_scheme = APIKeyHeader(name=AUTH_HEADER_NAME, auto_error=False)
+oauth2_scheme = APIKeyHeader(name=constants.AUTH_HEADER_NAME, auto_error=False)
 
 
 # MARK: Database

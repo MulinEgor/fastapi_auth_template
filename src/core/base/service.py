@@ -7,9 +7,9 @@ from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.base.types as types
-from src import exceptions
-from src.base import BaseRepository
+import src.core.base.types as types
+from src.core import exceptions
+from src.core.base import BaseRepository
 
 
 class BaseService(

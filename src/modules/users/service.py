@@ -2,14 +2,16 @@
 
 import uuid
 
+from loguru import logger
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.users.schemas as schemas
-from src import exceptions, utils
-from src.base import BaseService
-from src.users.models import UserModel
-from src.users.repository import UserRepository
+import src.modules.users.schemas as schemas
+from src.core import exceptions
+from src.core.base import BaseService
+from src.core.services import HashService
+from src.modules.users.models import UserModel
+from src.modules.users.repository import UserRepository
 
 
 class UserService(
@@ -48,9 +50,11 @@ class UserService(
             ConflictException: Пользователь уже существует.
         """
 
+        logger.info(f"Создание пользователя: {data}")
+
         try:
             # Хэширование пароля
-            hashed_password = utils.get_hash(data.password)
+            hashed_password = HashService.generate(data.password)
             data = schemas.UserCreateRepositorySchema(
                 email=data.email,
                 hashed_password=hashed_password,
@@ -92,12 +96,14 @@ class UserService(
             ConflictException: Пользователь с такими данными уже существует.
         """
 
+        logger.info(f"Обновление пользователя: {user_id} - {data}")
+
         # Поиск пользователя в БД
         await cls.get_by_id(session, user_id)
 
         hashed_password = None
         if data.password:
-            hashed_password = utils.get_hash(data.password)
+            hashed_password = HashService.generate(data.password)
 
         # Обновление пользователя в БД
         try:

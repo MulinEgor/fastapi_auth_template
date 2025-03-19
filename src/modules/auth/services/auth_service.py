@@ -1,12 +1,14 @@
 """Модуль для работы с авторизацией пользователей"""
 
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.auth.schemas as auth_schemas
-import src.users.schemas as user_schemas
-from src import exceptions, utils
-from src.auth.services.jwt_service import JWTService
-from src.users import UserRepository, UserService
+import src.modules.auth.schemas as auth_schemas
+import src.modules.users.schemas as user_schemas
+from src.core import exceptions
+from src.core.services import HashService
+from src.modules.auth.services.jwt_service import JWTService
+from src.modules.users import UserRepository, UserService
 
 
 class AuthService:
@@ -32,6 +34,8 @@ class AuthService:
         Raises:
             UserAlreadyExistsException: Пользователь с такими данными уже существует.
         """
+
+        logger.info(f"Регистрация пользователя: {schema}")
 
         # Создание пользователя
         user = await UserService.create(session, schema)
@@ -62,8 +66,10 @@ class AuthService:
             NotFoundException: Пользователь не найден.
         """
 
+        logger.info(f"Авторизация пользователя: {schema}")
+
         # Хэширование пароля
-        hashed_password = utils.get_hash(schema.password)
+        hashed_password = HashService.generate(schema.password)
 
         # Поиск пользователя в БД
         user = await UserRepository.get_one_or_none(

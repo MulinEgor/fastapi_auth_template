@@ -6,8 +6,8 @@ from sqlalchemy import Select, asc, delete, desc, insert, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import func
 
-import src.base.types as types
-from src import constants
+import src.core.base.types as types
+from src.core import constants
 
 
 class BaseRepository(
