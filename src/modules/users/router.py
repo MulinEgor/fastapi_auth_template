@@ -3,10 +3,10 @@
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.users.schemas as schemas
-from src import dependencies
-from src.users.models import UserModel
-from src.users.service import UserService
+import src.modules.users.schemas as schemas
+from src.core import dependencies
+from src.modules.users.models import UserModel
+from src.modules.users.service import UserService
 
 user_router = APIRouter(
     prefix="/users",

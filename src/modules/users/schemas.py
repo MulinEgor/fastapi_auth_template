@@ -7,7 +7,7 @@ from pydantic import (
     Field,
 )
 
-from src.base.schemas import DataListReadBaseSchema, PaginationBaseSchema
+from src.core.base import DataListReadBaseSchema, PaginationBaseSchema
 
 
 # MARK: User

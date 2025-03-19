@@ -16,12 +16,12 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-import src.auth.schemas as auth_schemas
-import src.users.schemas as user_schemas
-from src import utils
-from src.auth import JWTService
-from src.settings import settings
-from src.users import UserModel
+import src.modules.auth.schemas as auth_schemas
+import src.modules.users.schemas as user_schemas
+from src.core.services import HashService
+from src.core.settings import settings
+from src.modules.auth import JWTService
+from src.modules.users import UserModel
 
 faker = Faker()
 
@@ -129,7 +129,7 @@ async def user_db(session: AsyncSession) -> UserModel:
     user_db = UserModel(
         id=str(uuid.uuid4()),
         email=faker.email(),
-        hashed_password=utils.get_hash(faker.password()),
+        hashed_password=HashService.generate(faker.password()),
     )
     session.add(user_db)
     await session.commit()
@@ -144,7 +144,7 @@ async def user_admin_db(session: AsyncSession) -> UserModel:
     user_admin = UserModel(
         id=str(uuid.uuid4()),
         email=faker.email(),
-        hashed_password=utils.get_hash(faker.password()),
+        hashed_password=HashService.generate(faker.password()),
         is_admin=True,
     )
     session.add(user_admin)
@@ -154,7 +154,7 @@ async def user_admin_db(session: AsyncSession) -> UserModel:
 
 
 @pytest_asyncio.fixture
-async def user_create_data() -> user_schemas.UserGetAdminSchema:
+async def user_create_data() -> user_schemas.UserCreateAdminSchema:
     """
     Подготовленные данные для создания
     пользователя в БД администратором.
@@ -185,11 +185,11 @@ async def user_update_data() -> user_schemas.UserUpdateAdminSchema:
 async def user_jwt_tokens(user_db: UserModel) -> auth_schemas.JWTGetSchema:
     """Создать JWT токены  для тестового пользователя."""
 
-    return await JWTService.create_tokens(user_id=user_db.id)
+    return await JWTService.create_tokens(user_id=str(user_db.id))
 
 
 @pytest_asyncio.fixture
 async def admin_jwt_tokens(user_admin_db: UserModel) -> auth_schemas.JWTGetSchema:
     """Создать JWT токены  для тестового пользователя-администратора."""
 
-    return await JWTService.create_tokens(user_id=user_admin_db.id)
+    return await JWTService.create_tokens(user_id=str(user_admin_db.id))

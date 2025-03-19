@@ -6,7 +6,7 @@ import httpx
 import pytest_asyncio
 from fastapi import APIRouter, FastAPI
 
-from src.dependencies import get_session
+from src.core.dependencies import get_session
 
 
 class BaseTestRouter:

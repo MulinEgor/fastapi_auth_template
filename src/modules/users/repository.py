@@ -4,9 +4,9 @@ from typing import Tuple
 
 from sqlalchemy import Select, select
 
-import src.users.schemas as schemas
-from src.base import BaseRepository
-from src.users.models import UserModel
+import src.modules.users.schemas as schemas
+from src.core.base import BaseRepository
+from src.modules.users.models import UserModel
 
 
 class UserRepository(

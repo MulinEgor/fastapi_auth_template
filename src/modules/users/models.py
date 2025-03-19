@@ -6,8 +6,8 @@ from datetime import datetime
 from sqlalchemy import TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src import constants
-from src.database import Base
+from src.core import constants
+from src.core.database import Base
 
 
 class UserModel(Base):
